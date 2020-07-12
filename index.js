@@ -1,4 +1,6 @@
 const firebase = require('firebase');
+const { message } = require('antd');
+require('antd/dist/antd.css');
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDweMX3B6S8PxKeokSVnmOMAdO_oRqgQX8',
@@ -14,12 +16,23 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-function initialize(projectId) {
+let version = null;
+
+function initialize(projectId, options) {
   database.ref(`projects/${projectId}/version`).on('value', snapshot => {
-    alert(snapshot.val());
+    if (!version) {
+      // send that we are listening to the server
+      version = snapshot.val();
+      message.info(snapshot.val());
+      return;
+    }
+
+    message.info(snapshot.val());
+    console.log(snapshot.val());
   });
 
   window.onclose = () => {
+    alert('closing');
     database.ref(`projects/${projectId}/version`).off();
   };
 }
