@@ -1,1 +1,1 @@
-"# Mergefly Sync" 
+# Mergefly Sync
