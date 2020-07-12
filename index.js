@@ -23,7 +23,6 @@ function initialize(projectId, options) {
     if (!version) {
       // send that we are listening to the server
       version = snapshot.val();
-      message.info(snapshot.val());
       return;
     }
 
