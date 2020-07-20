@@ -1,4 +1,5 @@
 const firebase = require('firebase');
+const actions = require('./actions');
 const { message } = require('antd');
 require('antd/dist/antd.css');
 
@@ -16,24 +17,35 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+const actionFunctions = {
+  forcedUpdate: actions.forceUpdate,
+  clearCache: actions.clearCache,
+  clearLocalStorage: actions.clearLocalStorage,
+  clearSessionStorage: actions.clearSessionStorage,
+  clearCookies: actions.clearCookies
+};
+
 let version = null;
 
 function initialize(projectId, options) {
-  database.ref(`projects/${projectId}/version`).on('value', snapshot => {
-    if (!version) {
-      // send that we are listening to the server
-      version = snapshot.val();
+  version = localStorage.getItem('jellySyncVersion');
+  const ref = database.ref(`projects/${projectId}`);
+  connect(ref);
+
+  ref.onDisconnect(() => connect(ref));
+}
+
+function connect(ref) {
+  ref.on('value', snapshot => {
+    const incomingVersion = snapshot.val().version;
+    if (!version || version !== incomingVersion) {
+      snapshot.val().actions.foreach(action => actionFunctions[action]);
+      localStorage.setItem(('jellySyncVersion', incomingVersion));
+      version = incomingVersion;
+
       return;
     }
-
-    message.info(snapshot.val());
-    console.log(snapshot.val());
   });
-
-  window.onclose = () => {
-    alert('closing');
-    database.ref(`projects/${projectId}/version`).off();
-  };
 }
 
 module.exports = {
