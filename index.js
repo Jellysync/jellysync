@@ -4,14 +4,13 @@ const { message } = require('antd');
 require('antd/dist/antd.css');
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyDweMX3B6S8PxKeokSVnmOMAdO_oRqgQX8',
-  authDomain: 'mergefly-sync.firebaseapp.com',
-  databaseURL: 'https://mergefly-sync.firebaseio.com',
-  projectId: 'mergefly-sync',
-  storageBucket: 'mergefly-sync.appspot.com',
-  messagingSenderId: '185516473579',
-  appId: '1:185516473579:web:6953bd4c841a55c93492ae',
-  measurementId: 'G-BYY5M8ZCST'
+  apiKey: 'AIzaSyDRP5cBqpyLVUugQWZtYbSjaqrQlxYs2G8',
+  authDomain: 'jellysync.firebaseapp.com',
+  databaseURL: 'https://jellysync.firebaseio.com',
+  projectId: 'jellysync',
+  storageBucket: 'jellysync.appspot.com',
+  messagingSenderId: '757397537758',
+  appId: '1:757397537758:web:7dd1645537045fdfcb534f'
 };
 
 firebase.initializeApp(firebaseConfig);
