@@ -17,17 +17,18 @@ firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
 const actionFunctions = {
-  forcedUpdate: actions.forceUpdate,
+  forceUpdate: actions.forceUpdate,
   clearCache: actions.clearCache,
   clearLocalStorage: actions.clearLocalStorage,
   clearSessionStorage: actions.clearSessionStorage,
   clearCookies: actions.clearCookies
 };
 
-let version = null;
+let currVersion = null;
 
 function initialize(projectId, options) {
-  version = localStorage.getItem('jellySyncVersion');
+  currVersion = localStorage.getItem('jellySyncVersion');
+
   const ref = database.ref(`projects/${projectId}`);
   connect(ref);
 
@@ -36,13 +37,13 @@ function initialize(projectId, options) {
 
 function connect(ref) {
   ref.on('value', snapshot => {
-    const incomingVersion = snapshot.val().version;
-    if (!version || version !== incomingVersion) {
-      snapshot.val().actions.foreach(action => actionFunctions[action]);
-      localStorage.setItem(('jellySyncVersion', incomingVersion));
-      version = incomingVersion;
+    const { actions, version } = snapshot.val();
 
-      return;
+    if (!currVersion || currVersion !== version) {
+      (actions || []).forEach(action => actionFunctions[action]());
+
+      localStorage.setItem('jellySyncVersion', version);
+      currVersion = version;
     }
   });
 }

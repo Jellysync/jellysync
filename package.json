@@ -10,7 +10,8 @@
   "author": "Jellysync",
   "license": "MIT",
   "dependencies": {
-    "firebase": "^7.16.0"
+    "firebase": "^7.16.0",
+    "js-cookie": "^2.2.1"
   },
   "files": [
     "dist"
