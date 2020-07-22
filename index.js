@@ -1,5 +1,6 @@
 const firebase = require('firebase');
 const actions = require('./actions');
+require('antd/dist/antd.css');
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDRP5cBqpyLVUugQWZtYbSjaqrQlxYs2G8',
@@ -35,13 +36,13 @@ function initialize(projectId, options) {
 
 function connect(ref) {
   ref.on('value', snapshot => {
-    const { actions, version } = snapshot.val();
+    const snapshotValue = snapshot.val();
 
-    if (!currVersion || currVersion !== version) {
-      (actions || []).forEach(action => actionFunctions[action]());
+    if (!currVersion || currVersion !== snapshotValue.version) {
+      (snapshotValue.actions || []).forEach(action => actionFunctions[action](snapshotValue));
 
-      localStorage.setItem('jellySyncVersion', version);
-      currVersion = version;
+      localStorage.setItem('jellySyncVersion', snapshotValue.version);
+      currVersion = snapshotValue.version;
     }
   });
 }
