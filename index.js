@@ -1,7 +1,5 @@
 const firebase = require('firebase');
 const actions = require('./actions');
-const { message } = require('antd');
-require('antd/dist/antd.css');
 
 const firebaseConfig = {
   apiKey: 'AIzaSyDRP5cBqpyLVUugQWZtYbSjaqrQlxYs2G8',

@@ -185,37 +185,92 @@ process.chdir = function (dir) {
 process.umask = function() { return 0; };
 
 },{}],2:[function(require,module,exports){
+const jsCookie = require('js-cookie');
+
+function forceUpdate() {
+  // configure showing modal
+  location.reload();
+}
+
+function clearCache() {
+  // configure showing modal
+  location.reload(true);
+}
+
+function clearLocalStorage() {
+  localStorage.clear();
+}
+
+function clearSessionStorage() {
+  sessionStorage.clear();
+}
+
+function clearCookies() {
+  Object.keys(jsCookie.get()).forEach(cookie => jsCookie.remove(cookie));
+}
+
+module.exports = {
+  forceUpdate,
+  clearCache,
+  clearCookies,
+  clearLocalStorage,
+  clearSessionStorage
+};
+
+},{"js-cookie":21}],3:[function(require,module,exports){
 const firebase = require('firebase');
+const actions = require('./actions');
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyDweMX3B6S8PxKeokSVnmOMAdO_oRqgQX8',
-  authDomain: 'mergefly-sync.firebaseapp.com',
-  databaseURL: 'https://mergefly-sync.firebaseio.com',
-  projectId: 'mergefly-sync',
-  storageBucket: 'mergefly-sync.appspot.com',
-  messagingSenderId: '185516473579',
-  appId: '1:185516473579:web:6953bd4c841a55c93492ae',
-  measurementId: 'G-BYY5M8ZCST'
+  apiKey: 'AIzaSyDRP5cBqpyLVUugQWZtYbSjaqrQlxYs2G8',
+  authDomain: 'jellysync.firebaseapp.com',
+  databaseURL: 'https://jellysync.firebaseio.com',
+  projectId: 'jellysync',
+  storageBucket: 'jellysync.appspot.com',
+  messagingSenderId: '757397537758',
+  appId: '1:757397537758:web:7dd1645537045fdfcb534f'
 };
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-function initialize(projectId) {
-  database.ref(`projects/${projectId}/version`).on('value', snapshot => {
-    alert(snapshot.val());
-  });
+const actionFunctions = {
+  forceUpdate: actions.forceUpdate,
+  clearCache: actions.clearCache,
+  clearLocalStorage: actions.clearLocalStorage,
+  clearSessionStorage: actions.clearSessionStorage,
+  clearCookies: actions.clearCookies
+};
 
-  window.onclose = () => {
-    database.ref(`projects/${projectId}/version`).off();
-  };
+let currVersion = null;
+
+function initialize(projectId, options) {
+  currVersion = localStorage.getItem('jellySyncVersion');
+
+  const ref = database.ref(`projects/${projectId}`);
+  connect(ref);
+
+  ref.onDisconnect(() => connect(ref));
+}
+
+function connect(ref) {
+  ref.on('value', snapshot => {
+    const { actions, version } = snapshot.val();
+
+    if (!currVersion || currVersion !== version) {
+      (actions || []).forEach(action => actionFunctions[action]());
+
+      localStorage.setItem('jellySyncVersion', version);
+      currVersion = version;
+    }
+  });
 }
 
 module.exports = {
   initialize
 };
 
-},{"firebase":18}],3:[function(require,module,exports){
+},{"./actions":2,"firebase":19}],4:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -813,7 +868,7 @@ exports.resetGlobalVars = resetGlobalVars;
 exports.settings = settings;
 
 
-},{"@firebase/app":4,"@firebase/component":6,"@firebase/installations":10,"@firebase/logger":11,"@firebase/util":16,"tslib":20}],4:[function(require,module,exports){
+},{"@firebase/app":5,"@firebase/component":7,"@firebase/installations":11,"@firebase/logger":12,"@firebase/util":17,"tslib":22}],5:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -1489,7 +1544,7 @@ exports.default = firebase$1;
 exports.firebase = firebase$1;
 
 
-},{"@firebase/component":6,"@firebase/logger":11,"@firebase/util":16,"tslib":20}],5:[function(require,module,exports){
+},{"@firebase/component":7,"@firebase/logger":12,"@firebase/util":17,"tslib":22}],6:[function(require,module,exports){
 (function (global){
 (function() {var firebase = require('@firebase/app').default;/*
 
@@ -1925,7 +1980,7 @@ instanceFactory:function(b){b=b.getProvider("auth").getImmediate();return{getUid
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"@firebase/app":4}],6:[function(require,module,exports){
+},{"@firebase/app":5}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -2242,7 +2297,7 @@ exports.ComponentContainer = ComponentContainer;
 exports.Provider = Provider;
 
 
-},{"@firebase/util":16,"tslib":20}],7:[function(require,module,exports){
+},{"@firebase/util":17,"tslib":22}],8:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -17651,7 +17706,7 @@ exports.registerDatabase = registerDatabase;
 
 
 }).call(this,require('_process'))
-},{"@firebase/app":4,"@firebase/component":6,"@firebase/logger":11,"@firebase/util":16,"_process":1,"tslib":20}],8:[function(require,module,exports){
+},{"@firebase/app":5,"@firebase/component":7,"@firebase/logger":12,"@firebase/util":17,"_process":1,"tslib":22}],9:[function(require,module,exports){
 (function (process){
 "use strict";
 
@@ -32936,7 +32991,7 @@ Os(n), exports.__PRIVATE_registerFirestore = Os;
 
 
 }).call(this,require('_process'))
-},{"@firebase/app":4,"@firebase/component":6,"@firebase/logger":11,"@firebase/util":16,"@firebase/webchannel-wrapper":17,"_process":1,"tslib":20}],9:[function(require,module,exports){
+},{"@firebase/app":5,"@firebase/component":7,"@firebase/logger":12,"@firebase/util":17,"@firebase/webchannel-wrapper":18,"_process":1,"tslib":22}],10:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -33582,7 +33637,7 @@ registerFunctions(firebase);
 firebase.registerVersion(name, version);
 
 
-},{"@firebase/app":4,"@firebase/component":6,"tslib":20}],10:[function(require,module,exports){
+},{"@firebase/app":5,"@firebase/component":7,"tslib":22}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -34918,7 +34973,7 @@ registerInstallations(firebase);
 exports.registerInstallations = registerInstallations;
 
 
-},{"@firebase/app":4,"@firebase/component":6,"@firebase/util":16,"idb":19,"tslib":20}],11:[function(require,module,exports){
+},{"@firebase/app":5,"@firebase/component":7,"@firebase/util":17,"idb":20,"tslib":22}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -35201,7 +35256,7 @@ exports.setLogLevel = setLogLevel;
 exports.setUserLogHandler = setUserLogHandler;
 
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -36810,7 +36865,7 @@ function isSWControllerSupported() {
 }
 
 
-},{"@firebase/app":4,"@firebase/component":6,"@firebase/installations":10,"@firebase/util":16,"idb":19,"tslib":20}],13:[function(require,module,exports){
+},{"@firebase/app":5,"@firebase/component":7,"@firebase/installations":11,"@firebase/util":17,"idb":20,"tslib":22}],14:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -38225,7 +38280,7 @@ registerPerformance(firebase);
 exports.registerPerformance = registerPerformance;
 
 
-},{"@firebase/app":4,"@firebase/component":6,"@firebase/installations":10,"@firebase/logger":11,"@firebase/util":16,"tslib":20}],14:[function(require,module,exports){
+},{"@firebase/app":5,"@firebase/component":7,"@firebase/installations":11,"@firebase/logger":12,"@firebase/util":17,"tslib":22}],15:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -39462,7 +39517,7 @@ registerRemoteConfig(firebase);
 exports.registerRemoteConfig = registerRemoteConfig;
 
 
-},{"@firebase/app":4,"@firebase/component":6,"@firebase/installations":10,"@firebase/logger":11,"@firebase/util":16,"tslib":20}],15:[function(require,module,exports){
+},{"@firebase/app":5,"@firebase/component":7,"@firebase/installations":11,"@firebase/logger":12,"@firebase/util":17,"tslib":22}],16:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, '__esModule', { value: true });
@@ -43048,7 +43103,7 @@ registerStorage(firebase);
 exports.registerStorage = registerStorage;
 
 
-},{"@firebase/app":4,"@firebase/component":6,"tslib":20}],16:[function(require,module,exports){
+},{"@firebase/app":5,"@firebase/component":7,"tslib":22}],17:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -44706,7 +44761,7 @@ exports.validateNamespace = validateNamespace;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"tslib":20}],17:[function(require,module,exports){
+},{"tslib":22}],18:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -46038,7 +46093,7 @@ exports.default = cjs;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 'use strict';
 
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
@@ -46100,7 +46155,7 @@ firebase.registerVersion(name$1, version$1);
 module.exports = firebase;
 
 
-},{"@firebase/analytics":3,"@firebase/app":4,"@firebase/auth":5,"@firebase/database":7,"@firebase/firestore":8,"@firebase/functions":9,"@firebase/messaging":12,"@firebase/performance":13,"@firebase/remote-config":14,"@firebase/storage":15}],19:[function(require,module,exports){
+},{"@firebase/analytics":4,"@firebase/app":5,"@firebase/auth":6,"@firebase/database":8,"@firebase/firestore":9,"@firebase/functions":10,"@firebase/messaging":13,"@firebase/performance":14,"@firebase/remote-config":15,"@firebase/storage":16}],20:[function(require,module,exports){
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
   typeof define === 'function' && define.amd ? define(['exports'], factory) :
@@ -46418,7 +46473,172 @@ module.exports = firebase;
 
 }));
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
+/*!
+ * JavaScript Cookie v2.2.1
+ * https://github.com/js-cookie/js-cookie
+ *
+ * Copyright 2006, 2015 Klaus Hartl & Fagner Brack
+ * Released under the MIT license
+ */
+;(function (factory) {
+	var registeredInModuleLoader;
+	if (typeof define === 'function' && define.amd) {
+		define(factory);
+		registeredInModuleLoader = true;
+	}
+	if (typeof exports === 'object') {
+		module.exports = factory();
+		registeredInModuleLoader = true;
+	}
+	if (!registeredInModuleLoader) {
+		var OldCookies = window.Cookies;
+		var api = window.Cookies = factory();
+		api.noConflict = function () {
+			window.Cookies = OldCookies;
+			return api;
+		};
+	}
+}(function () {
+	function extend () {
+		var i = 0;
+		var result = {};
+		for (; i < arguments.length; i++) {
+			var attributes = arguments[ i ];
+			for (var key in attributes) {
+				result[key] = attributes[key];
+			}
+		}
+		return result;
+	}
+
+	function decode (s) {
+		return s.replace(/(%[0-9A-Z]{2})+/g, decodeURIComponent);
+	}
+
+	function init (converter) {
+		function api() {}
+
+		function set (key, value, attributes) {
+			if (typeof document === 'undefined') {
+				return;
+			}
+
+			attributes = extend({
+				path: '/'
+			}, api.defaults, attributes);
+
+			if (typeof attributes.expires === 'number') {
+				attributes.expires = new Date(new Date() * 1 + attributes.expires * 864e+5);
+			}
+
+			// We're using "expires" because "max-age" is not supported by IE
+			attributes.expires = attributes.expires ? attributes.expires.toUTCString() : '';
+
+			try {
+				var result = JSON.stringify(value);
+				if (/^[\{\[]/.test(result)) {
+					value = result;
+				}
+			} catch (e) {}
+
+			value = converter.write ?
+				converter.write(value, key) :
+				encodeURIComponent(String(value))
+					.replace(/%(23|24|26|2B|3A|3C|3E|3D|2F|3F|40|5B|5D|5E|60|7B|7D|7C)/g, decodeURIComponent);
+
+			key = encodeURIComponent(String(key))
+				.replace(/%(23|24|26|2B|5E|60|7C)/g, decodeURIComponent)
+				.replace(/[\(\)]/g, escape);
+
+			var stringifiedAttributes = '';
+			for (var attributeName in attributes) {
+				if (!attributes[attributeName]) {
+					continue;
+				}
+				stringifiedAttributes += '; ' + attributeName;
+				if (attributes[attributeName] === true) {
+					continue;
+				}
+
+				// Considers RFC 6265 section 5.2:
+				// ...
+				// 3.  If the remaining unparsed-attributes contains a %x3B (";")
+				//     character:
+				// Consume the characters of the unparsed-attributes up to,
+				// not including, the first %x3B (";") character.
+				// ...
+				stringifiedAttributes += '=' + attributes[attributeName].split(';')[0];
+			}
+
+			return (document.cookie = key + '=' + value + stringifiedAttributes);
+		}
+
+		function get (key, json) {
+			if (typeof document === 'undefined') {
+				return;
+			}
+
+			var jar = {};
+			// To prevent the for loop in the first place assign an empty array
+			// in case there are no cookies at all.
+			var cookies = document.cookie ? document.cookie.split('; ') : [];
+			var i = 0;
+
+			for (; i < cookies.length; i++) {
+				var parts = cookies[i].split('=');
+				var cookie = parts.slice(1).join('=');
+
+				if (!json && cookie.charAt(0) === '"') {
+					cookie = cookie.slice(1, -1);
+				}
+
+				try {
+					var name = decode(parts[0]);
+					cookie = (converter.read || converter)(cookie, name) ||
+						decode(cookie);
+
+					if (json) {
+						try {
+							cookie = JSON.parse(cookie);
+						} catch (e) {}
+					}
+
+					jar[name] = cookie;
+
+					if (key === name) {
+						break;
+					}
+				} catch (e) {}
+			}
+
+			return key ? jar[key] : jar;
+		}
+
+		api.set = set;
+		api.get = function (key) {
+			return get(key, false /* read as raw */);
+		};
+		api.getJSON = function (key) {
+			return get(key, true /* read as json */);
+		};
+		api.remove = function (key, attributes) {
+			set(key, '', extend(attributes, {
+				expires: -1
+			}));
+		};
+
+		api.defaults = {};
+
+		api.withConverter = init;
+
+		return api;
+	}
+
+	return init(function () {});
+}));
+
+},{}],22:[function(require,module,exports){
 (function (global){
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -46706,4 +46926,4 @@ var __createBinding;
 });
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}]},{},[2]);
+},{}]},{},[3]);
