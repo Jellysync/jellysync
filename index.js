@@ -24,30 +24,6 @@ const actionFunctions = {
 
 let currVersion = null;
 
-class Jellysync {
-  initialize(projectId, options) {
-    currVersion = localStorage.getItem('jellySyncVersion');
-
-    const ref = database.ref(`projects/${projectId}`);
-    this.connect(ref);
-
-    ref.onDisconnect(() => this.connect(ref));
-  }
-
-  connect(ref) {
-    ref.on('value', snapshot => {
-      const { actions, version } = snapshot.val();
-
-      if (!currVersion || currVersion !== version) {
-        (actions || []).forEach(action => actionFunctions[action]());
-
-        localStorage.setItem('jellySyncVersion', version);
-        currVersion = version;
-      }
-    });
-  }
-}
-
 function initialize(projectId, options) {
   currVersion = localStorage.getItem('jellySyncVersion');
 
@@ -70,8 +46,10 @@ function connect(ref) {
   });
 }
 
-window.Jellysync = new Jellysync();
-
-module.exports = {
+const Jellysync = {
   initialize
 };
+
+window.Jellysync = Jellysync;
+
+module.exports = Jellysync;
