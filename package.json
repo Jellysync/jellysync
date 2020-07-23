@@ -1,14 +1,14 @@
 {
   "name": "jellysync",
-  "version": "1.0.8",
+  "version": "1.0.10",
   "description": "",
   "main": "index.js",
   "scripts": {
     "build": "browserify -g browserify-css index.js -o dist/module.js",
     "minify": "browserify -g uglifyify dist/module.js > dist/module.min.js",
     "build:prd": "npm-run-all build minify",
-    "build-publish": "npm-run-all build:prd publish",
-    "publish": "npm publish"
+    "build-publish": "npm-run-all build:prd publish:prd",
+    "publish:prd": "npm publish"
   },
   "author": "Jellysync",
   "license": "MIT",
