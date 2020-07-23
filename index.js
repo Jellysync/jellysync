@@ -38,7 +38,14 @@ function connect(ref) {
   ref.on('value', snapshot => {
     const snapshotValue = snapshot.val();
 
-    if (!currVersion || currVersion !== snapshotValue.version) {
+    if (!currVersion) {
+      localStorage.setItem('jellySyncVersion', snapshotValue.version);
+      currVersion = snapshotValue.version;
+
+      return;
+    }
+
+    if (currVersion !== snapshotValue.version) {
       (snapshotValue.actions || []).forEach(action => actionFunctions[action](snapshotValue));
 
       localStorage.setItem('jellySyncVersion', snapshotValue.version);
