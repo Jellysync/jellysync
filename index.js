@@ -47,6 +47,10 @@ function connect(ref) {
   });
 }
 
-module.exports = {
+const Jellysync = {
   initialize
 };
+
+window.Jellysync = Jellysync;
+
+module.exports = Jellysync;
