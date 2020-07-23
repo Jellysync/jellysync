@@ -6,7 +6,9 @@
   "scripts": {
     "build": "browserify -g browserify-css index.js -o dist/module.js",
     "minify": "browserify -g uglifyify dist/module.js > dist/module.min.js",
-    "build:prd": "npm-run-all build minify"
+    "build:prd": "npm-run-all build minify",
+    "build-publish": "npm-run-all build:prd",
+    "publish": "npm publish"
   },
   "author": "Jellysync",
   "license": "MIT",
