@@ -11,11 +11,10 @@
   "author": "Jellysync",
   "license": "MIT",
   "dependencies": {
-    "antd": "^4.4.3",
     "firebase": "^7.16.0",
+    "jquery": "^3.5.1",
     "js-cookie": "^2.2.1",
-    "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "micromodal": "^0.4.6"
   },
   "files": [
     "dist"
