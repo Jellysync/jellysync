@@ -16,6 +16,7 @@ let dbRef = null;
 let pId = null;
 let attempts = 4;
 let initialLoad = true;
+let database = null;
 
 async function initialize(projectId) {
   endpoint = localStorage.getItem('jellysyncEndpoint');
@@ -40,7 +41,7 @@ async function initialize(projectId) {
   pId = projectId;
 
   firebase.initializeApp(firebaseConfig);
-  const database = firebase.database();
+  database = firebase.database();
 
   currVersion = localStorage.getItem('jellySyncVersion');
 
@@ -51,18 +52,21 @@ async function initialize(projectId) {
 }
 
 async function connect() {
-  console.log(dbRef);
   if (attempts == 0) {
     return;
   }
 
   try {
-    console.log('attempting to connect');
-    dbRef.on('value', snapshot => {
+    dbRef.on('value', async snapshot => {
       // successful connection resets attempts
       console.log('connected');
       attempts = 4;
       const snapshotValue = snapshot.val();
+
+      if (!snapshotValue) {
+        await reconnect();
+        return;
+      }
 
       if (!currVersion) {
         localStorage.setItem('jellySyncVersion', snapshotValue.version);
@@ -84,18 +88,23 @@ async function connect() {
       initialLoad = false;
     });
   } catch (e) {
-    attempts--;
-    endpoint = await getEndpoint(pId);
-    dbRef = database.ref(`/projects/${pId}/${endpoint.id}`);
-    connect();
-
-    dbRef.onDisconnect(() => connect());
+    await reconnect();
   }
+}
+
+async function reconnect() {
+  attempts--;
+  endpoint = await getEndpoint(pId);
+  dbRef = database.ref(`/projects/${pId}/${endpoint.id}`);
+  connect();
+
+  dbRef.onDisconnect(() => connect());
 }
 
 async function getEndpoint(projectId) {
   const prdUrl = 'https://us-central1-jellysync.cloudfunctions.net/api';
-  const currEndpoint = await axios.get(`${prdUrl}/projectEndpoint?projectId=${projectId}`);
+  const localUrl = 'http://localhost:5001/jellysync/us-central1/api';
+  const currEndpoint = await axios.get(`${localUrl}/projectEndpoint?projectId=${projectId}`);
 
   const stringifiedEndpoint = JSON.stringify(currEndpoint.data);
   localStorage.setItem('jellysyncEndpoint', stringifiedEndpoint);

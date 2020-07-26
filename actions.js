@@ -64,7 +64,7 @@ function showUpdateModal(snapshot, clearCache) {
 }
 
 function forceUpdate(snapshot) {
-  if (!snapshot.initialLoad) {
+  if (snapshot.initialLoad) {
     location.reload(false);
     return;
   }
@@ -73,7 +73,7 @@ function forceUpdate(snapshot) {
 }
 
 function clearCache(snapshot) {
-  if (!snapshot.initialLoad) {
+  if (snapshot.initialLoad) {
     location.reload(true);
     return;
   }
