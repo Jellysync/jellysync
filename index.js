@@ -1,19 +1,6 @@
 const firebase = require('firebase');
 const actions = require('./actions');
 
-const firebaseConfig = {
-  apiKey: 'AIzaSyDRP5cBqpyLVUugQWZtYbSjaqrQlxYs2G8',
-  authDomain: 'jellysync.firebaseapp.com',
-  databaseURL: 'https://jellysync.firebaseio.com',
-  projectId: 'jellysync',
-  storageBucket: 'jellysync.appspot.com',
-  messagingSenderId: '757397537758',
-  appId: '1:757397537758:web:7dd1645537045fdfcb534f'
-};
-
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
-
 const actionFunctions = {
   forceUpdate: actions.forceUpdate,
   clearCache: actions.clearCache,
@@ -25,6 +12,19 @@ const actionFunctions = {
 let currVersion = null;
 
 function initialize(projectId, options) {
+  const firebaseConfig = {
+    apiKey: 'AIzaSyDRP5cBqpyLVUugQWZtYbSjaqrQlxYs2G8',
+    authDomain: 'jellysync.firebaseapp.com',
+    databaseURL: `https://jellysync-${projectId}.firebaseio.com`,
+    projectId: 'jellysync',
+    storageBucket: 'jellysync.appspot.com',
+    messagingSenderId: '757397537758',
+    appId: '1:757397537758:web:7dd1645537045fdfcb534f'
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+
   currVersion = localStorage.getItem('jellySyncVersion');
 
   const ref = database.ref(`projects/${projectId}`);
