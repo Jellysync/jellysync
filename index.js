@@ -14,6 +14,7 @@ let currVersion = null;
 let endpoint = null;
 let dbRef = null;
 let pId = null;
+let attempts = 4;
 
 async function initialize(projectId, options) {
   const firebaseConfig = {
@@ -41,12 +42,18 @@ async function initialize(projectId, options) {
   dbRef = database.ref(`project/${endpoint}`);
   connect();
 
-  ref.onDisconnect(() => connect());
+  dbRef.onDisconnect(() => connect());
 }
 
 async function connect() {
+  if (attempts == 0) {
+    return;
+  }
+
   try {
     dbRef.on('value', snapshot => {
+      // successful connection resets attempts
+      attempts = 4;
       const snapshotValue = snapshot.val();
 
       if (!currVersion) {
@@ -64,8 +71,11 @@ async function connect() {
       }
     });
   } catch (e) {
+    attempts--;
     endpoint = await getEndpoint(pId);
     dbRef = database.ref(`project/${endpoint}`);
+    connect();
+
     dbRef.onDisconnect(() => connect());
   }
 }
