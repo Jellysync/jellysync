@@ -17,10 +17,18 @@ let pId = null;
 let attempts = 4;
 
 async function initialize(projectId, options) {
+  endpoint = localStorage.getItem('jellysyncEndpoint');
+
+  if (!endpoint) {
+    endpoint = await getEndpoint(projectId);
+  } else {
+    endpoint = JSON.parse(endpoint);
+  }
+
   const firebaseConfig = {
     apiKey: 'AIzaSyDRP5cBqpyLVUugQWZtYbSjaqrQlxYs2G8',
     authDomain: 'jellysync.firebaseapp.com',
-    databaseURL: `https://jellysync-${projectId}.firebaseio.com`,
+    databaseURL: endpoint.databaseURL,
     projectId: 'jellysync',
     storageBucket: 'jellysync.appspot.com',
     messagingSenderId: '757397537758',
@@ -33,13 +41,8 @@ async function initialize(projectId, options) {
   const database = firebase.database();
 
   currVersion = localStorage.getItem('jellySyncVersion');
-  endpoint = localStorage.getItem('jellysyncEndpoint');
 
-  if (!endpoint) {
-    endpoint = await getEndpoint(projectId);
-  }
-
-  dbRef = database.ref(`project/${endpoint}`);
+  dbRef = database.ref(`projects/${projectId}/${endpoint.id}`);
   connect();
 
   dbRef.onDisconnect(() => connect());
@@ -73,7 +76,7 @@ async function connect() {
   } catch (e) {
     attempts--;
     endpoint = await getEndpoint(pId);
-    dbRef = database.ref(`project/${endpoint}`);
+    dbRef = database.ref(`projects/${pId}/${endpoint.id}`);
     connect();
 
     dbRef.onDisconnect(() => connect());
@@ -81,12 +84,14 @@ async function connect() {
 }
 
 async function getEndpoint(projectId) {
-  const endpointId = await axios.get(
+  const currEndpoint = await axios.get(
     `https://us-central1-jellysync.cloudfunctions.net/api/projectEndpoint?projectId=${projectId}`
   );
-  localStorage.setItem('jellysyncEndpoint', endpointId.data);
 
-  return endpointId.data;
+  const stringifiedEndpoint = JSON.stringify(currEndpoint.data);
+  localStorage.setItem('jellysyncEndpoint', stringifiedEndpoint);
+
+  return currEndpoint.data;
 }
 
 const Jellysync = {
