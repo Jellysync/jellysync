@@ -23,7 +23,6 @@ async function initialize(projectId) {
 
   if (!endpoint) {
     endpoint = await getEndpoint(projectId);
-    console.log(endpoint);
   } else {
     endpoint = JSON.parse(endpoint);
   }
@@ -59,7 +58,6 @@ async function connect() {
   try {
     dbRef.on('value', async snapshot => {
       // successful connection resets attempts
-      console.log('connected');
       attempts = 4;
       const snapshotValue = snapshot.val();
 
@@ -103,8 +101,8 @@ async function reconnect() {
 
 async function getEndpoint(projectId) {
   const prdUrl = 'https://us-central1-jellysync.cloudfunctions.net/api';
-  const localUrl = 'http://localhost:5001/jellysync/us-central1/api';
-  const currEndpoint = await axios.get(`${localUrl}/projectEndpoint?projectId=${projectId}`);
+
+  const currEndpoint = await axios.get(`${prdUrl}/projectEndpoint?projectId=${projectId}`);
 
   const stringifiedEndpoint = JSON.stringify(currEndpoint.data);
   localStorage.setItem('jellysyncEndpoint', stringifiedEndpoint);
