@@ -1,6 +1,12 @@
 const firebase = require('firebase');
 const actions = require('./actions');
 const axios = require('axios');
+const axiosRetry = require('axios-retry');
+
+const axiosInstance = axios.create();
+axiosRetry(axiosInstance, {
+  retries: 3
+});
 
 const actionFunctions = {
   forceUpdate: actions.forceUpdate,
@@ -23,6 +29,9 @@ async function initialize(projectId) {
 
   if (!endpoint) {
     endpoint = await getEndpoint(projectId);
+    if (!endpoint) {
+      return null;
+    }
   } else {
     endpoint = JSON.parse(endpoint);
   }
@@ -93,6 +102,10 @@ async function connect() {
 async function reconnect() {
   attempts--;
   endpoint = await getEndpoint(pId);
+  if (!endpoint) {
+    return;
+  }
+
   dbRef = database.ref(`/projects/${pId}/${endpoint.id}`);
   connect();
 
@@ -100,14 +113,21 @@ async function reconnect() {
 }
 
 async function getEndpoint(projectId) {
-  const prdUrl = 'https://us-central1-jellysync.cloudfunctions.net/api';
+  try {
+    const prdUrl = 'https://us-central1-jellysync.cloudfunctions.net/api';
 
-  const currEndpoint = await axios.get(`${prdUrl}/projectEndpoint?projectId=${projectId}`);
+    const currEndpoint = await axiosInstance.get(`${prdUrl}/projectEndpoint?projectId=${projectId}`);
+    if (!currEndpoint) {
+      return null;
+    }
 
-  const stringifiedEndpoint = JSON.stringify(currEndpoint.data);
-  localStorage.setItem('jellysyncEndpoint', stringifiedEndpoint);
+    const stringifiedEndpoint = JSON.stringify(currEndpoint.data);
+    localStorage.setItem('jellysyncEndpoint', stringifiedEndpoint);
 
-  return currEndpoint.data;
+    return currEndpoint.data;
+  } catch (e) {
+    return null;
+  }
 }
 
 const Jellysync = {
