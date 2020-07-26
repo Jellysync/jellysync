@@ -38,25 +38,28 @@ function showUpdateModal(snapshot, clearCache) {
     }
   });
 
-  MicroModal.init();
-  MicroModal.show('jellysync-modal');
-
   let secondsToGo = refreshTime;
+  let timer = null;
 
-  const timer = setInterval(() => {
+  MicroModal.show('jellysync-modal', {
+    onClose: () => {
+      clearInterval(timer);
+      location.reload(clearCache);
+    }
+  });
+
+  timer = setInterval(() => {
     secondsToGo -= 1;
 
     $('.modal__countdown').text(`Auto refreshing in ${secondsToGo} seconds.`);
+
+    if (secondsToGo <= 0) {
+      MicroModal.close('jellysync-modal');
+    }
   }, 1000);
 
-  setTimeout(() => {
-    clearInterval(timer);
-    location.reload(clearCache);
-  }, secondsToGo * 1000);
-
   $('.jellysync_update_button').click(() => {
-    clearInterval(timer);
-    location.reload(clearCache);
+    MicroModal.close('jellysync-modal');
   });
 }
 
