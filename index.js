@@ -15,12 +15,14 @@ let endpoint = null;
 let dbRef = null;
 let pId = null;
 let attempts = 4;
+let initialLoad = true;
 
-async function initialize(projectId, options) {
+async function initialize(projectId) {
   endpoint = localStorage.getItem('jellysyncEndpoint');
 
   if (!endpoint) {
     endpoint = await getEndpoint(projectId);
+    console.log(endpoint);
   } else {
     endpoint = JSON.parse(endpoint);
   }
@@ -42,20 +44,23 @@ async function initialize(projectId, options) {
 
   currVersion = localStorage.getItem('jellySyncVersion');
 
-  dbRef = database.ref(`projects/${projectId}/${endpoint.id}`);
+  dbRef = database.ref(`/projects/${projectId}/${endpoint.id}`);
   connect();
 
   dbRef.onDisconnect(() => connect());
 }
 
 async function connect() {
+  console.log(dbRef);
   if (attempts == 0) {
     return;
   }
 
   try {
+    console.log('attempting to connect');
     dbRef.on('value', snapshot => {
       // successful connection resets attempts
+      console.log('connected');
       attempts = 4;
       const snapshotValue = snapshot.val();
 
@@ -67,16 +72,21 @@ async function connect() {
       }
 
       if (currVersion !== snapshotValue.version) {
+        snapshotValue.initialLoad = initialLoad;
+
         (snapshotValue.actions || []).forEach(action => actionFunctions[action](snapshotValue));
 
         localStorage.setItem('jellySyncVersion', snapshotValue.version);
+        localStorage.setItem('jellysyncEndpoint', JSON.stringify(endpoint));
         currVersion = snapshotValue.version;
       }
+
+      initialLoad = false;
     });
   } catch (e) {
     attempts--;
     endpoint = await getEndpoint(pId);
-    dbRef = database.ref(`projects/${pId}/${endpoint.id}`);
+    dbRef = database.ref(`/projects/${pId}/${endpoint.id}`);
     connect();
 
     dbRef.onDisconnect(() => connect());
@@ -84,9 +94,8 @@ async function connect() {
 }
 
 async function getEndpoint(projectId) {
-  const currEndpoint = await axios.get(
-    `https://us-central1-jellysync.cloudfunctions.net/api/projectEndpoint?projectId=${projectId}`
-  );
+  const prdUrl = 'https://us-central1-jellysync.cloudfunctions.net/api';
+  const currEndpoint = await axios.get(`${prdUrl}/projectEndpoint?projectId=${projectId}`);
 
   const stringifiedEndpoint = JSON.stringify(currEndpoint.data);
   localStorage.setItem('jellysyncEndpoint', stringifiedEndpoint);

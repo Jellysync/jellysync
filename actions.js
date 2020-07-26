@@ -64,10 +64,20 @@ function showUpdateModal(snapshot, clearCache) {
 }
 
 function forceUpdate(snapshot) {
+  if (!snapshot.initialLoad) {
+    location.reload(false);
+    return;
+  }
+
   showUpdateModal(snapshot, false);
 }
 
 function clearCache(snapshot) {
+  if (!snapshot.initialLoad) {
+    location.reload(true);
+    return;
+  }
+
   showUpdateModal(snapshot, true);
 }
 
