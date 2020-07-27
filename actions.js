@@ -41,6 +41,7 @@ function showUpdateModal(snapshot, clearCache) {
   let secondsToGo = refreshTime;
   let timer = null;
 
+  MicroModal.init();
   MicroModal.show('jellysync-modal', {
     onClose: () => {
       clearInterval(timer);
