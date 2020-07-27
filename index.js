@@ -1,4 +1,5 @@
-const firebase = require('firebase');
+const firebase = require('firebase/app');
+require('firebase/database');
 const actions = require('./actions');
 const axios = require('axios');
 const axiosRetry = require('axios-retry');
@@ -53,7 +54,7 @@ async function initialize(projectId) {
 
   currVersion = localStorage.getItem('jellySyncVersion');
 
-  dbRef = database.ref(`/projects/${projectId}/${endpoint.id}`);
+  dbRef = database.ref(`projects/${projectId}/${endpoint.id}`);
   connect();
 
   dbRef.onDisconnect(() => connect());
@@ -78,6 +79,7 @@ async function connect() {
       if (!currVersion) {
         localStorage.setItem('jellySyncVersion', snapshotValue.version);
         currVersion = snapshotValue.version;
+        initialLoad = false;
 
         return;
       }
@@ -95,6 +97,7 @@ async function connect() {
       initialLoad = false;
     });
   } catch (e) {
+    console.log(e.message);
     await reconnect();
   }
 }
