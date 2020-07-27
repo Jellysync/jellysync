@@ -12,7 +12,7 @@ function showUpdateModal(snapshot, clearCache) {
   }
 
   $(document.body).append(`
-    <div class="modal micromodal-slide" id="jellysync-modal" aria-hidden="true">
+    <div class="jellysync_modal micromodal-slide" id="jellysync-modal" aria-hidden="true">
       <div class="modal__overlay" tabindex="-1">
         <div class="modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
           <header class="modal__header">
