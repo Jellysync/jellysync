@@ -109,7 +109,7 @@ async function reconnect() {
     return;
   }
 
-  dbRef = database.ref(`/projects/${pId}/${endpoint.id}`);
+  dbRef = database.ref(`projects/${pId}/${endpoint.id}`);
   connect();
 
   dbRef.onDisconnect(() => connect());
