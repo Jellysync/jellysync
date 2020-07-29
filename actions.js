@@ -85,8 +85,9 @@ export function clearCache(snapshot) {
   showUpdateModal(snapshot, true);
 }
 
-export function clearLocalStorage() {
+export function clearLocalStorage(snapshot) {
   localStorage.clear();
+  localStorage.setItem('jellySyncVersion', snapshot.version);
 }
 
 export function clearSessionStorage() {

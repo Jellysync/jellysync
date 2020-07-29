@@ -3,6 +3,7 @@ import 'firebase/database';
 import * as actions from './actions';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
+import $ from 'jquery';
 
 const axiosInstance = axios.create();
 axiosRetry(axiosInstance, {
@@ -17,24 +18,19 @@ const actionFunctions = {
   clearCookies: actions.clearCookies
 };
 
-let currVersion = null;
-let endpoint = null;
-let dbRef = null;
-let pId = null;
-let attempts = 4;
+const prdUrl = 'https://us-central1-jellysync.cloudfunctions.net/api';
 let initialLoad = true;
 let database = null;
+let projectId = null;
+let endpoint = null;
+let dbRef = null;
 
-async function initialize(projectId) {
-  endpoint = localStorage.getItem('jellysyncEndpoint');
+async function initialize(pId) {
+  projectId = pId;
+  endpoint = await getEndpoint(projectId);
 
   if (!endpoint) {
-    endpoint = await getEndpoint(projectId);
-    if (!endpoint) {
-      return null;
-    }
-  } else {
-    endpoint = JSON.parse(endpoint);
+    return;
   }
 
   const firebaseConfig = {
@@ -47,89 +43,93 @@ async function initialize(projectId) {
     appId: '1:757397537758:web:7dd1645537045fdfcb534f'
   };
 
-  pId = projectId;
-
   firebase.initializeApp(firebaseConfig);
   database = firebase.database();
 
-  currVersion = localStorage.getItem('jellySyncVersion');
-
-  dbRef = database.ref(`projects/${projectId}/${endpoint.id}`);
   connect();
 
-  dbRef.onDisconnect(() => connect());
+  window.onbeforeunload = () => {
+    killAndReconnect(false);
+
+    return null;
+  };
+
+  $(window).blur(function () {
+    killAndReconnect(false);
+
+    return null;
+  });
+
+  $(window).focus(function () {
+    connect();
+  });
 }
 
-async function connect() {
-  if (attempts == 0) {
+async function connect(attemptsRemaining = 4) {
+  if (attemptsRemaining === 0) {
     return;
   }
 
   try {
+    if (!endpoint) {
+      endpoint = await getEndpoint(projectId);
+
+      if (!endpoint) {
+        connect(attemptsRemaining - 1);
+      }
+    }
+
+    dbRef = database.ref(`projects/${projectId}/${endpoint.id}`);
+    dbRef.onDisconnect(() => killAndReconnect());
+
     dbRef.on('value', async snapshot => {
-      // successful connection resets attempts
-      attempts = 4;
       const snapshotValue = snapshot.val();
 
+      // should happen when we scramble
       if (!snapshotValue) {
-        await reconnect();
+        killAndReconnect();
         return;
       }
 
-      if (!currVersion) {
-        localStorage.setItem('jellySyncVersion', snapshotValue.version);
-        currVersion = snapshotValue.version;
-        initialLoad = false;
-
-        return;
-      }
-
-      if (currVersion !== snapshotValue.version) {
+      if (localStorage.getItem('jellySyncVersion') !== snapshotValue.version) {
         snapshotValue.initialLoad = initialLoad;
+        localStorage.setItem('jellySyncVersion', snapshotValue.version);
 
         (snapshotValue.actions || []).forEach(action => actionFunctions[action](snapshotValue));
-
-        localStorage.setItem('jellySyncVersion', snapshotValue.version);
-        localStorage.setItem('jellysyncEndpoint', JSON.stringify(endpoint));
-        currVersion = snapshotValue.version;
       }
 
       initialLoad = false;
     });
   } catch (e) {
     console.log(e.message);
-    await reconnect();
+    await connect(attemptsRemaining - 1);
   }
-}
-
-async function reconnect() {
-  attempts--;
-  endpoint = await getEndpoint(pId);
-  if (!endpoint) {
-    return;
-  }
-
-  dbRef = database.ref(`projects/${pId}/${endpoint.id}`);
-  connect();
-
-  dbRef.onDisconnect(() => connect());
 }
 
 async function getEndpoint(projectId) {
   try {
-    const prdUrl = 'https://us-central1-jellysync.cloudfunctions.net/api';
-
     const currEndpoint = await axiosInstance.get(`${prdUrl}/projectEndpoint?projectId=${projectId}`);
-    if (!currEndpoint) {
-      return null;
-    }
 
-    const stringifiedEndpoint = JSON.stringify(currEndpoint.data);
-    localStorage.setItem('jellysyncEndpoint', stringifiedEndpoint);
-
-    return currEndpoint.data;
+    return currEndpoint ? currEndpoint.data : null;
   } catch (e) {
     return null;
+  }
+}
+
+function killAndReconnect(shouldReconnect = true) {
+  dbRef.off();
+
+  if (endpoint) {
+    axiosInstance.post(`${prdUrl}/killChannel`, {
+      projectId,
+      channelId: endpoint.id
+    });
+  }
+
+  endpoint = null;
+
+  if (shouldReconnect) {
+    connect();
   }
 }
 
