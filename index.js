@@ -46,7 +46,7 @@ async function initialize(pId) {
   firebase.initializeApp(firebaseConfig);
   database = firebase.database();
 
-  connect(4);
+  connect();
 
   window.onbeforeunload = () => {
     killAndReconnect(false);
@@ -129,7 +129,7 @@ function killAndReconnect(shouldReconnect = true) {
   endpoint = null;
 
   if (shouldReconnect) {
-    connect(4);
+    connect();
   }
 }
 
