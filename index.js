@@ -1,8 +1,8 @@
-const firebase = require('firebase/app');
-require('firebase/database');
-const actions = require('./actions');
-const axios = require('axios');
-const axiosRetry = require('axios-retry');
+import firebase from 'firebase/app';
+import 'firebase/database';
+import * as actions from './actions';
+import axios from 'axios';
+import axiosRetry from 'axios-retry';
 
 const axiosInstance = axios.create();
 axiosRetry(axiosInstance, {
@@ -138,5 +138,4 @@ const Jellysync = {
 };
 
 window.Jellysync = Jellysync;
-
-module.exports = Jellysync;
+export default Jellysync;

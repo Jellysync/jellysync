@@ -1,12 +1,10 @@
 {
   "name": "jellysync",
-  "version": "1.0.14",
+  "version": "1.0.32",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "browserify -g browserify-css index.js -o dist/module.js",
-    "minify": "browserify -g uglifyify dist/module.js > dist/module.min.js",
-    "build:prd": "npm-run-all build minify"
+    "build": "browserify -t babelify -g browserify-css index.js -o dist/module.js"
   },
   "author": "Jellysync",
   "license": "MIT",
@@ -30,8 +28,12 @@
   },
   "homepage": "https://github.com/Jellysync/jellysync#readme",
   "devDependencies": {
-    "browserify-css": "^0.15.0",
-    "npm-run-all": "^4.1.5",
-    "uglifyify": "^5.0.2"
+    "@babel/core": "^7.10.5",
+    "@babel/plugin-transform-async-to-generator": "^7.10.4",
+    "@babel/plugin-transform-runtime": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "babel-plugin-syntax-async-functions": "^6.13.0",
+    "babelify": "^10.0.0",
+    "browserify-css": "^0.15.0"
   }
 }
