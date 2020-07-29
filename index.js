@@ -1,9 +1,9 @@
-const firebase = require('firebase/app');
-require('firebase/database');
-const actions = require('./actions');
-const axios = require('axios');
-const axiosRetry = require('axios-retry');
-const $ = require('jquery');
+import firebase from 'firebase/app';
+import 'firebase/database';
+import * as actions from './actions';
+import axios from 'axios';
+import axiosRetry from 'axios-retry';
+import $ from 'jquery';
 
 const axiosInstance = axios.create();
 axiosRetry(axiosInstance, {
@@ -23,7 +23,7 @@ let initialLoad = true;
 let database = null;
 let projectId = null;
 let endpoint = null;
-let dbref = null;
+let dbRef = null;
 
 async function initialize(pId) {
   projectId = pId;
