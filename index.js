@@ -11,14 +11,14 @@ axiosRetry(axiosInstance, {
 });
 
 const actionFunctions = {
-  forceUpdate: actions.forceUpdate,
+  forceRefresh: actions.forceRefresh,
   clearCache: actions.clearCache,
   clearLocalStorage: actions.clearLocalStorage,
   clearSessionStorage: actions.clearSessionStorage,
   clearCookies: actions.clearCookies
 };
 
-const prdUrl = 'https://us-central1-jellysync.cloudfunctions.net/api';
+const prdUrl = 'http://localhost:5001/jellysync/us-central1/api';
 let initialLoad = true;
 let database = null;
 let projectId = null;
