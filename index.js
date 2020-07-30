@@ -18,7 +18,7 @@ const actionFunctions = {
   clearCookies: actions.clearCookies
 };
 
-const prdUrl = 'http://localhost:5001/jellysync/us-central1/api';
+const prdUrl = 'https://us-central1-jellysync.cloudfunctions.net/api';
 let initialLoad = true;
 let database = null;
 let projectId = null;
