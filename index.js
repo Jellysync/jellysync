@@ -11,7 +11,7 @@ axiosRetry(axiosInstance, {
 });
 
 const actionFunctions = {
-  forceUpdate: actions.forceUpdate,
+  forceRefresh: actions.forceRefresh,
   clearCache: actions.clearCache,
   clearLocalStorage: actions.clearLocalStorage,
   clearSessionStorage: actions.clearSessionStorage,

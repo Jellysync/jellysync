@@ -67,7 +67,7 @@ export function showUpdateModal(snapshot, clearCache) {
   });
 }
 
-export function forceUpdate(snapshot) {
+export function forceRefresh(snapshot) {
   if (snapshot.initialLoad) {
     location.reload(false);
     return;
