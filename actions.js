@@ -48,6 +48,7 @@ export function showUpdateModal(snapshot, clearCache) {
   MicroModal.show('jellysync-modal', {
     onClose: () => {
       clearInterval(timer);
+      snapshot.reloadCallback();
       location.reload(clearCache);
     }
   });
@@ -69,6 +70,7 @@ export function showUpdateModal(snapshot, clearCache) {
 
 export function forceRefresh(snapshot) {
   if (snapshot.initialLoad) {
+    snapshot.reloadCallback();
     location.reload(false);
     return;
   }
@@ -78,6 +80,7 @@ export function forceRefresh(snapshot) {
 
 export function clearCache(snapshot) {
   if (snapshot.initialLoad) {
+    snapshot.reloadCallback();
     location.reload(true);
     return;
   }

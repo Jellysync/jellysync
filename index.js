@@ -56,8 +56,6 @@ async function initialize(pId) {
 
   $(window).blur(function () {
     killAndReconnect(false);
-
-    return null;
   });
 
   $(window).focus(function () {
@@ -76,6 +74,7 @@ async function connect(attemptsRemaining = 4) {
 
       if (!endpoint) {
         connect(attemptsRemaining - 1);
+        return;
       }
     }
 
@@ -92,10 +91,14 @@ async function connect(attemptsRemaining = 4) {
       }
 
       if (localStorage.getItem('jellySyncVersion') !== snapshotValue.version) {
-        snapshotValue.initialLoad = initialLoad;
         localStorage.setItem('jellySyncVersion', snapshotValue.version);
 
-        (snapshotValue.actions || []).forEach(action => actionFunctions[action](snapshotValue));
+        snapshotValue.initialLoad = initialLoad;
+        snapshotValue.reloadCallback = () => killAndReconnect(false);
+
+        const actions = snapshotValue.actions || [];
+
+        actions.forEach(action => actionFunctions[action](snapshotValue));
       }
 
       initialLoad = false;
