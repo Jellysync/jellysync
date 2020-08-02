@@ -89,7 +89,12 @@ export function clearCache(snapshot) {
 }
 
 export function clearLocalStorage(snapshot) {
-  localStorage.clear();
+  if (snapshot.clearAllLocalStorage) {
+    snapshot.localStorageKeys.forEach(k => localStorage.removeItem(k));
+  } else {
+    localStorage.clear();
+  }
+
   localStorage.setItem('jellySyncVersion', snapshot.version);
 }
 
