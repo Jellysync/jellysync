@@ -90,7 +90,20 @@ export function clearCache(snapshot) {
 
 export function clearLocalStorage(snapshot) {
   if (!snapshot.clearAllLocalStorage) {
-    snapshot.localStorageKeys.forEach(k => localStorage.removeItem(k));
+    if (snapshot.whiteListLocalStorage) {
+      snapshot.localStorageKeys.forEach(k => localStorage.removeItem(k));
+    } else {
+      const storage = {};
+
+      snapshot.localStorageKeys.forEach(k => (storage[k] = localStorage.getItem(k)));
+      localStorage.clear();
+      Object.keys(storage).forEach(k => {
+        console.log(storage[k]);
+        if (storage[k]) {
+          localStorage.setItem(k, storage[k]);
+        }
+      });
+    }
   } else {
     localStorage.clear();
   }
