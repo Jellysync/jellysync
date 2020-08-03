@@ -111,7 +111,23 @@ export function clearLocalStorage(snapshot) {
 }
 
 export function clearSessionStorage() {
-  sessionStorage.clear();
+  if (!snapshot.clearAllSessionStorage) {
+    if (snapshot.whiteListSessionStorage) {
+      snapshot.sessionStorageKeys.forEach(k => sessionStorage.removeItem(k));
+    } else {
+      const storage = {};
+
+      snapshot.sessionStorageKeys.forEach(k => (storage[k] = sessionStorage.getItem(k)));
+      sessionStorage.clear();
+      Object.keys(storage).forEach(k => {
+        if (storage[k]) {
+          sessionStorage.setItem(k, storage[k]);
+        }
+      });
+    }
+  } else {
+    sessionStorage.clear();
+  }
 }
 
 export function clearCookies() {
