@@ -98,7 +98,6 @@ export function clearLocalStorage(snapshot) {
       snapshot.localStorageKeys.forEach(k => (storage[k] = localStorage.getItem(k)));
       localStorage.clear();
       Object.keys(storage).forEach(k => {
-        console.log(storage[k]);
         if (storage[k]) {
           localStorage.setItem(k, storage[k]);
         }
