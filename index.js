@@ -3,12 +3,9 @@ import 'firebase/database';
 import * as actions from './actions';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
-import $ from 'jquery';
 
 const axiosInstance = axios.create();
-axiosRetry(axiosInstance, {
-  retries: 3
-});
+axiosRetry(axiosInstance, { retries: 3 });
 
 const actionFunctions = {
   forceRefresh: actions.forceRefresh,
@@ -24,10 +21,11 @@ let database = null;
 let projectId = null;
 let endpoint = null;
 let dbRef = null;
+let interval = null;
 
 async function initialize(pId) {
   projectId = pId;
-  endpoint = await getEndpoint(projectId);
+  endpoint = JSON.parse(localStorage.getItem('endpoint')) || (await getEndpoint(projectId));
 
   if (!endpoint) {
     return;
@@ -47,20 +45,6 @@ async function initialize(pId) {
   database = firebase.database();
 
   connect();
-
-  window.onbeforeunload = () => {
-    killAndReconnect(false);
-
-    return null;
-  };
-
-  $(window).blur(function () {
-    killAndReconnect(false);
-  });
-
-  $(window).focus(function () {
-    connect();
-  });
 }
 
 async function connect(attemptsRemaining = 4) {
@@ -79,22 +63,30 @@ async function connect(attemptsRemaining = 4) {
     }
 
     dbRef = database.ref(`projects/${projectId}/${endpoint.id}`);
-    dbRef.onDisconnect(() => killAndReconnect());
+
+    dbRef.onDisconnect(() => connect());
 
     dbRef.on('value', async snapshot => {
       const snapshotValue = snapshot.val();
 
       // should happen when we scramble
       if (!snapshotValue) {
-        killAndReconnect();
+        endpoint = await getEndpoint(projectId);
+        connect();
+
         return;
       }
 
-      if (localStorage.getItem('jellySyncVersion') !== snapshotValue.version) {
+      if (!interval) {
+        interval = setInterval(() => {
+          dbRef.update({ timestamp: Date.now() });
+        }, 300000);
+      }
+
+      if (snapshotValue.version && localStorage.getItem('jellySyncVersion') !== snapshotValue.version) {
         localStorage.setItem('jellySyncVersion', snapshotValue.version);
 
         snapshotValue.initialLoad = initialLoad;
-        snapshotValue.reloadCallback = () => killAndReconnect(false);
 
         const actions = snapshotValue.actions || [];
 
@@ -104,35 +96,23 @@ async function connect(attemptsRemaining = 4) {
       initialLoad = false;
     });
   } catch (e) {
-    console.log(e.message);
     await connect(attemptsRemaining - 1);
   }
 }
 
 async function getEndpoint(projectId) {
+  clearInterval(interval);
+  interval = null;
+
   try {
     const currEndpoint = await axiosInstance.get(`${prdUrl}/projectEndpoint?projectId=${projectId}`);
+    if (currEndpoint.data) {
+      localStorage.setItem('endpoint', JSON.stringify(currEndpoint.data));
+    }
 
-    return currEndpoint ? currEndpoint.data : null;
+    return currEndpoint.data;
   } catch (e) {
     return null;
-  }
-}
-
-function killAndReconnect(shouldReconnect = true) {
-  dbRef.off();
-
-  if (endpoint) {
-    axiosInstance.post(`${prdUrl}/killChannel`, {
-      projectId,
-      channelId: endpoint.id
-    });
-  }
-
-  endpoint = null;
-
-  if (shouldReconnect) {
-    connect();
   }
 }
 
