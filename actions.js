@@ -48,7 +48,6 @@ export function showUpdateModal(snapshot, clearCache) {
   MicroModal.show('jellysync-modal', {
     onClose: () => {
       clearInterval(timer);
-      snapshot.reloadCallback();
       location.reload(clearCache);
     }
   });
@@ -70,7 +69,6 @@ export function showUpdateModal(snapshot, clearCache) {
 
 export function forceRefresh(snapshot) {
   if (snapshot.initialLoad) {
-    snapshot.reloadCallback();
     location.reload(false);
     return;
   }
@@ -80,7 +78,6 @@ export function forceRefresh(snapshot) {
 
 export function clearCache(snapshot) {
   if (snapshot.initialLoad) {
-    snapshot.reloadCallback();
     location.reload(true);
     return;
   }
@@ -110,7 +107,7 @@ export function clearLocalStorage(snapshot) {
   localStorage.setItem('jellySyncVersion', snapshot.version);
 }
 
-export function clearSessionStorage() {
+export function clearSessionStorage(snapshot) {
   if (!snapshot.clearAllSessionStorage) {
     if (snapshot.whiteListSessionStorage) {
       snapshot.sessionStorageKeys.forEach(k => sessionStorage.removeItem(k));
