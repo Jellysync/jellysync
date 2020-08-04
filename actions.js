@@ -76,7 +76,11 @@ export function forceRefresh(snapshot) {
   showUpdateModal(snapshot, false);
 }
 
-export function clearCache(snapshot) {
+export async function clearCache(snapshot) {
+  const keyList = await caches.keys();
+
+  await Promise.all(keyList.map(key => caches.delete(key)));
+
   if (snapshot.initialLoad) {
     location.reload(true);
     return;

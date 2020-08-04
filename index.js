@@ -90,7 +90,9 @@ async function connect(attemptsRemaining = 4) {
 
         const actions = snapshotValue.actions || [];
 
-        actions.forEach(action => actionFunctions[action](snapshotValue));
+        for (let action of actions) {
+          await actionFunctions[action](snapshotValue);
+        }
       }
 
       initialLoad = false;
