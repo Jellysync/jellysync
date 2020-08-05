@@ -3,6 +3,7 @@ import 'firebase/database';
 import * as actions from './actions';
 import axios from 'axios';
 import axiosRetry from 'axios-retry';
+import $ from 'jquery';
 
 const axiosInstance = axios.create();
 axiosRetry(axiosInstance, { retries: 3 });
@@ -45,6 +46,14 @@ async function initialize(pId) {
   database = firebase.database();
 
   connect();
+
+  $(window).focus(async () => {
+    const connected = await firebase.database().ref('.info/connected').once('value');
+
+    if (!connected.val()) {
+      connect();
+    }
+  });
 }
 
 async function connect(attemptsRemaining = 4) {
@@ -79,7 +88,7 @@ async function connect(attemptsRemaining = 4) {
 
       if (!interval) {
         interval = setInterval(() => {
-          dbRef.update({ timestamp: Date.now() });
+          dbRef.update({ timestamp: Date.now(), currentVersion: localStorage.getItem('jellySyncVersion') });
         }, 300000);
       }
 
