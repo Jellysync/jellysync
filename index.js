@@ -26,7 +26,7 @@ let interval = null;
 
 async function initialize(pId) {
   projectId = pId;
-  endpoint = JSON.parse(localStorage.getItem('endpoint')) || (await getEndpoint(projectId));
+  endpoint = JSON.parse(localStorage.getItem('jellySyncEndpoint')) || (await getEndpoint(projectId));
 
   if (!endpoint) {
     return;
@@ -45,7 +45,7 @@ async function initialize(pId) {
   firebase.initializeApp(firebaseConfig);
   database = firebase.database();
 
-  connect();
+  await connect();
 
   $(window).focus(async () => {
     const connected = await firebase.database().ref('.info/connected').once('value');
@@ -87,8 +87,10 @@ async function connect(attemptsRemaining = 4) {
       }
 
       if (!interval) {
+        dbRef.update({ timestamp: Date.now(), currentVersion: localStorage.getItem('jellySyncVersion') });
+
         interval = setInterval(() => {
-          dbRef.update({ timestamp: Date.now(), currentVersion: localStorage.getItem('jellySyncVersion') });
+          dbRef.update({ timestamp: Date.now() });
         }, 300000);
       }
 
@@ -96,6 +98,7 @@ async function connect(attemptsRemaining = 4) {
         localStorage.setItem('jellySyncVersion', snapshotValue.version);
 
         snapshotValue.initialLoad = initialLoad;
+        snapshotValue.endpoint = endpoint;
 
         const actions = snapshotValue.actions || [];
 
@@ -117,8 +120,9 @@ async function getEndpoint(projectId) {
 
   try {
     const currEndpoint = await axiosInstance.get(`${prdUrl}/projectEndpoint?projectId=${projectId}`);
+
     if (currEndpoint.data) {
-      localStorage.setItem('endpoint', JSON.stringify(currEndpoint.data));
+      localStorage.setItem('jellySyncEndpoint', JSON.stringify(currEndpoint.data));
     }
 
     return currEndpoint.data;

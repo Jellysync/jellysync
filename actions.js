@@ -98,6 +98,7 @@ export function clearLocalStorage(snapshot) {
 
       snapshot.localStorageKeys.forEach(k => (storage[k] = localStorage.getItem(k)));
       localStorage.clear();
+
       Object.keys(storage).forEach(k => {
         if (storage[k]) {
           localStorage.setItem(k, storage[k]);
@@ -109,6 +110,7 @@ export function clearLocalStorage(snapshot) {
   }
 
   localStorage.setItem('jellySyncVersion', snapshot.version);
+  localStorage.setItem('jellySyncEndpoint', JSON.stringify(snapshot.endpoint));
 }
 
 export function clearSessionStorage(snapshot) {
