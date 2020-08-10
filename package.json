@@ -1,6 +1,6 @@
 {
   "name": "jellysync",
-  "version": "1.0.43",
+  "version": "1.0.44",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,10 +9,10 @@
   "author": "Jellysync",
   "license": "MIT",
   "dependencies": {
+    "appendhtml": "^1.2.0",
     "axios": "^0.19.2",
     "axios-retry": "^3.1.8",
     "firebase": "^7.16.0",
-    "jquery": "^3.5.1",
     "js-cookie": "^2.2.1",
     "micromodal": "^0.4.6"
   },
