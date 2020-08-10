@@ -86,11 +86,11 @@ async function connect(attemptsRemaining = 4) {
       }
 
       if (!interval) {
-        dbRef.update({ timestamp: Date.now(), currentVersion: localStorage.getItem('jellySyncVersion') });
-
         interval = setInterval(() => {
           dbRef.update({ timestamp: Date.now() });
         }, 300000);
+
+        dbRef.update({ timestamp: Date.now(), currentVersion: localStorage.getItem('jellySyncVersion') });
       }
 
       if (snapshotValue.version && localStorage.getItem('jellySyncVersion') !== snapshotValue.version) {
