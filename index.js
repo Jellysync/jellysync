@@ -119,7 +119,7 @@ async function getEndpoint(projectId) {
   interval = null;
 
   try {
-    const currEndpoint = await axiosInstance.get(`${prdUrl}/projectEndpoint?projectId=${projectId}`);
+    const currEndpoint = await axiosInstance.get(`${prdUrl}/projects/${projectId}/projectEndpoint`);
 
     if (currEndpoint.data) {
       localStorage.setItem('jellySyncEndpoint', JSON.stringify(currEndpoint.data));
