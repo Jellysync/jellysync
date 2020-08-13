@@ -3,7 +3,7 @@ import MicroModal from 'micromodal';
 import jsCookie from 'js-cookie';
 import appendHtml from 'appendhtml';
 
-async function showUpdateModal(snapshot, clearCache) {
+async function showUpdateModal(snapshot) {
   const { version, showModalOnForce, refreshTime, modalText } = snapshot;
 
   // Don't do anything if a modal is already open
@@ -12,7 +12,7 @@ async function showUpdateModal(snapshot, clearCache) {
   }
 
   if (!showModalOnForce) {
-    return location.reload(clearCache);
+    return location.reload();
   }
 
   const jellySyncModal = `
@@ -50,7 +50,7 @@ async function showUpdateModal(snapshot, clearCache) {
   MicroModal.show('jellysync-modal', {
     onClose: () => {
       clearInterval(timer);
-      location.reload(clearCache);
+      location.reload();
     }
   });
 
@@ -71,24 +71,17 @@ async function showUpdateModal(snapshot, clearCache) {
 
 export function forceRefresh(snapshot) {
   if (snapshot.initialLoad) {
-    location.reload(false);
+    location.reload();
     return;
   }
 
-  showUpdateModal(snapshot, false);
+  showUpdateModal(snapshot);
 }
 
-export async function clearCache(snapshot) {
+export async function clearCache() {
   const keyList = await caches.keys();
 
   await Promise.all(keyList.map(key => caches.delete(key)));
-
-  if (snapshot.initialLoad) {
-    location.reload(true);
-    return;
-  }
-
-  showUpdateModal(snapshot, true);
 }
 
 export function clearLocalStorage(snapshot) {
