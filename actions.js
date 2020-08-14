@@ -3,16 +3,12 @@ import MicroModal from 'micromodal';
 import jsCookie from 'js-cookie';
 import appendHtml from 'appendhtml';
 
-async function showUpdateModal(snapshot) {
-  const { version, showModalOnForce, refreshTime, modalText } = snapshot;
+export async function showUpdateModal(snapshot, callback) {
+  const { version, refreshTime, modalText } = snapshot;
 
   // Don't do anything if a modal is already open
   if (document.getElementsByClassName('jellysync_modal').length) {
     return;
-  }
-
-  if (!showModalOnForce) {
-    return location.reload();
   }
 
   const jellySyncModal = `
@@ -50,7 +46,7 @@ async function showUpdateModal(snapshot) {
   MicroModal.show('jellysync-modal', {
     onClose: () => {
       clearInterval(timer);
-      location.reload();
+      callback();
     }
   });
 
@@ -69,13 +65,8 @@ async function showUpdateModal(snapshot) {
   };
 }
 
-export function forceRefresh(snapshot) {
-  if (snapshot.initialLoad) {
-    location.reload();
-    return;
-  }
-
-  showUpdateModal(snapshot);
+export function forceRefresh() {
+  location.reload();
 }
 
 export async function clearCache() {
