@@ -3,21 +3,23 @@ import MicroModal from 'micromodal';
 import jsCookie from 'js-cookie';
 import appendHtml from 'appendhtml';
 
-async function showUpdateModal(snapshot) {
-  const { version, showModalOnForce, refreshTime, modalText } = snapshot;
+export async function showUpdateModal(snapshot, callback) {
+  const { version, refreshTime, modalText, updateIsOptional } = snapshot;
 
   // Don't do anything if a modal is already open
   if (document.getElementsByClassName('jellysync_modal').length) {
     return;
   }
 
-  if (!showModalOnForce) {
-    return location.reload();
-  }
+  const closeTag = updateIsOptional ? 'data-micromodal-close' : '';
+  const countdown = updateIsOptional ? '' : `<p class="jellysync_modal__countdown">Auto refreshing in ${refreshTime} seconds.</p>`;
+  const cancelButton = updateIsOptional
+    ? '<button class="jellysync_modal__btn jellysync_modal__btn jellysync_cancel_button" data-micromodal-close>Cancel</button>'
+    : '';
 
   const jellySyncModal = `
     <div class="jellysync_modal" id="jellysync-modal" aria-hidden="true">
-      <div class="jellysync_modal__overlay" tabindex="-1">
+      <div class="jellysync_modal__overlay" tabindex="-1" ${closeTag}>
         <div class="jellysync_modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
           <header class="jellysync_modal__header">
             <h2 class="jellysync_modal__title" id="modal-1-title">
@@ -26,9 +28,10 @@ async function showUpdateModal(snapshot) {
           </header>
           <main class="jellysync_modal__content" id="modal-1-content">
             <p>${modalText}</p>
-            <p class="jellysync_modal__countdown">Auto refreshing in ${refreshTime} seconds.</p>
+            ${countdown}
           </main>
           <footer class="jellysync_modal__footer">
+            ${cancelButton}
             <button class="jellysync_modal__btn jellysync_modal__btn-primary jellysync_update_button">Update</button>
           </footer>
         </div>
@@ -38,44 +41,53 @@ async function showUpdateModal(snapshot) {
 
   await appendHtml(jellySyncModal, document.body);
 
-  document.onkeydown = event => {
-    if (event.keyCode === 27) {
-      event.stopImmediatePropagation();
-    }
-  };
+  // Must be called before modal is opened
+  if (!updateIsOptional) {
+    document.onkeydown = event => {
+      if (event.keyCode === 27) {
+        event.stopImmediatePropagation();
+      }
+    };
+  }
 
   let secondsToGo = refreshTime;
   let timer = null;
+  let performUpdate = false;
 
   MicroModal.show('jellysync-modal', {
     onClose: () => {
       clearInterval(timer);
-      location.reload();
+
+      const modal = document.querySelector('#jellysync-modal');
+      modal.parentNode.removeChild(modal);
+
+      if (performUpdate) {
+        callback();
+      }
     }
   });
 
-  timer = setInterval(() => {
-    secondsToGo -= 1;
+  if (!updateIsOptional) {
+    timer = setInterval(() => {
+      secondsToGo -= 1;
 
-    document.getElementsByClassName('jellysync_modal__countdown')[0].innerHTML = `Auto refreshing in ${secondsToGo} seconds.`;
+      document.getElementsByClassName('jellysync_modal__countdown')[0].innerHTML = `Auto refreshing in ${secondsToGo} seconds.`;
 
-    if (secondsToGo <= 0) {
-      MicroModal.close('jellysync-modal');
-    }
-  }, 1000);
+      if (secondsToGo <= 0) {
+        performUpdate = true;
+        MicroModal.close('jellysync-modal');
+      }
+    }, 1000);
+  }
 
   document.getElementsByClassName('jellysync_update_button')[0].onclick = () => {
+    performUpdate = true;
     MicroModal.close('jellysync-modal');
   };
 }
 
-export function forceRefresh(snapshot) {
-  if (snapshot.initialLoad) {
-    location.reload();
-    return;
-  }
-
-  showUpdateModal(snapshot);
+export function forceRefresh() {
+  location.reload();
 }
 
 export async function clearCache() {

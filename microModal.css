@@ -91,6 +91,10 @@
   color: #fff;
 }
 
+.jellysync_cancel_button {
+  margin-right: 10px;
+}
+
 .jellysync_modal__footer {
   display: flex;
   justify-content: flex-end;

@@ -94,15 +94,22 @@ async function connect(attemptsRemaining = 4) {
       }
 
       if (snapshotValue.version && localStorage.getItem('jellySyncVersion') !== snapshotValue.version) {
-        localStorage.setItem('jellySyncVersion', snapshotValue.version);
+        const runUpdate = async () => {
+          localStorage.setItem('jellySyncVersion', snapshotValue.version);
 
-        snapshotValue.initialLoad = initialLoad;
-        snapshotValue.endpoint = endpoint;
+          snapshotValue.endpoint = endpoint;
 
-        const actions = snapshotValue.actions || [];
+          const actions = snapshotValue.actions || [];
 
-        for (let action of actions) {
-          await actionFunctions[action](snapshotValue);
+          for (let action of actions) {
+            await actionFunctions[action](snapshotValue);
+          }
+        };
+
+        if (initialLoad || !snapshotValue.showModalOnForce) {
+          await runUpdate();
+        } else {
+          actions.showUpdateModal(snapshotValue, runUpdate);
         }
       }
 
