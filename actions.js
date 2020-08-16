@@ -12,6 +12,7 @@ export async function showUpdateModal(snapshot, callback) {
   }
 
   const closeTag = updateIsOptional ? 'data-micromodal-close' : '';
+  const countdown = updateIsOptional ? '' : `<p class="jellysync_modal__countdown">Auto refreshing in ${refreshTime} seconds.</p>`;
   const cancelButton = updateIsOptional
     ? '<button class="jellysync_modal__btn jellysync_modal__btn jellysync_cancel_button" data-micromodal-close>Cancel</button>'
     : '';
@@ -27,7 +28,7 @@ export async function showUpdateModal(snapshot, callback) {
           </header>
           <main class="jellysync_modal__content" id="modal-1-content">
             <p>${modalText}</p>
-            <p class="jellysync_modal__countdown">Auto refreshing in ${refreshTime} seconds.</p>
+            ${countdown}
           </main>
           <footer class="jellysync_modal__footer">
             ${cancelButton}
@@ -40,6 +41,7 @@ export async function showUpdateModal(snapshot, callback) {
 
   await appendHtml(jellySyncModal, document.body);
 
+  // Must be called before modal is opened
   if (!updateIsOptional) {
     document.onkeydown = event => {
       if (event.keyCode === 27) {
@@ -65,16 +67,18 @@ export async function showUpdateModal(snapshot, callback) {
     }
   });
 
-  timer = setInterval(() => {
-    secondsToGo -= 1;
+  if (!updateIsOptional) {
+    timer = setInterval(() => {
+      secondsToGo -= 1;
 
-    document.getElementsByClassName('jellysync_modal__countdown')[0].innerHTML = `Auto refreshing in ${secondsToGo} seconds.`;
+      document.getElementsByClassName('jellysync_modal__countdown')[0].innerHTML = `Auto refreshing in ${secondsToGo} seconds.`;
 
-    if (secondsToGo <= 0) {
-      performUpdate = true;
-      MicroModal.close('jellysync-modal');
-    }
-  }, 1000);
+      if (secondsToGo <= 0) {
+        performUpdate = true;
+        MicroModal.close('jellysync-modal');
+      }
+    }, 1000);
+  }
 
   document.getElementsByClassName('jellysync_update_button')[0].onclick = () => {
     performUpdate = true;
