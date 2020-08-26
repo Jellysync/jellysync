@@ -15,7 +15,6 @@ const actionFunctions = {
   clearCookies: actions.clearCookies
 };
 
-const prdUrl = 'https://us-central1-jellysync.cloudfunctions.net/api';
 let initialLoad = true;
 let database = null;
 let projectId = null;
@@ -75,6 +74,7 @@ async function connect(attemptsRemaining = 4) {
     dbRef.onDisconnect(() => connect());
 
     dbRef.on('value', async snapshot => {
+      console.log('got snapshot');
       const snapshotValue = snapshot.val();
 
       // should happen when we scramble
@@ -86,6 +86,7 @@ async function connect(attemptsRemaining = 4) {
       }
 
       if (!interval) {
+        console.log('reconnect');
         interval = setInterval(() => {
           dbRef.update({ timestamp: Date.now() });
         }, 300000);
@@ -125,7 +126,7 @@ async function getEndpoint(projectId) {
   interval = null;
 
   try {
-    const currEndpoint = await axiosInstance.get(`${prdUrl}/projects/${projectId}/projectEndpoint`);
+    const currEndpoint = await axiosInstance.get(`https://jellysync.com/api/v1/projects/${projectId}/projectEndpoint`);
 
     if (currEndpoint.data) {
       localStorage.setItem('jellySyncEndpoint', JSON.stringify(currEndpoint.data));
