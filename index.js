@@ -20,7 +20,6 @@ let database = null;
 let projectId = null;
 let endpoint = null;
 let dbRef = null;
-let interval = null;
 
 async function initialize(pId) {
   projectId = pId;
@@ -74,7 +73,6 @@ async function connect(attemptsRemaining = 4) {
     dbRef.onDisconnect(() => connect());
 
     dbRef.on('value', async snapshot => {
-      console.log('got snapshot');
       const snapshotValue = snapshot.val();
 
       // should happen when we scramble
@@ -85,14 +83,7 @@ async function connect(attemptsRemaining = 4) {
         return;
       }
 
-      if (!interval) {
-        console.log('reconnect');
-        interval = setInterval(() => {
-          dbRef.update({ timestamp: Date.now() });
-        }, 300000);
-
-        dbRef.update({ timestamp: Date.now(), currentVersion: localStorage.getItem('jellySyncVersion') });
-      }
+      dbRef.update({ currentVersion: localStorage.getItem('jellySyncVersion') });
 
       if (snapshotValue.version && localStorage.getItem('jellySyncVersion') !== snapshotValue.version) {
         const runUpdate = async () => {
@@ -122,9 +113,6 @@ async function connect(attemptsRemaining = 4) {
 }
 
 async function getEndpoint(projectId) {
-  clearInterval(interval);
-  interval = null;
-
   try {
     const currEndpoint = await axiosInstance.get(`https://jellysync.com/api/v1/projects/${projectId}/projectEndpoint`);
 
