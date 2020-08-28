@@ -114,7 +114,7 @@ async function connect(attemptsRemaining = 4) {
 
 async function getEndpoint(projectId) {
   try {
-    const currEndpoint = await axiosInstance.get(`https://jellysync.com/api/v1/projects/${projectId}/projectEndpoint`);
+    const currEndpoint = await axiosInstance.get(`https://app.jellysync.com/api/v1/projects/${projectId}/projectEndpoint`);
 
     if (currEndpoint.data) {
       localStorage.setItem('jellySyncEndpoint', JSON.stringify(currEndpoint.data));
