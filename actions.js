@@ -4,7 +4,7 @@ import jsCookie from 'js-cookie';
 import appendHtml from 'appendhtml';
 
 export async function showUpdateModal(snapshot, callback) {
-  const { refreshTime, modalText, updateIsOptional } = snapshot;
+  const { refreshTime, modalTitle, modalText, updateIsOptional } = snapshot;
 
   // Don't do anything if a modal is already open
   if (document.getElementsByClassName('jellysync_modal').length) {
@@ -23,7 +23,7 @@ export async function showUpdateModal(snapshot, callback) {
         <div class="jellysync_modal__container" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
           <header class="jellysync_modal__header">
             <h2 class="jellysync_modal__title" id="modal-1-title">
-              A new update is available
+              ${modalTitle}
             </h2>
           </header>
           <main class="jellysync_modal__content" id="modal-1-content">
