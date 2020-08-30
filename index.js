@@ -98,7 +98,7 @@ async function connect(attemptsRemaining = 4) {
           }
         };
 
-        if (initialLoad || !snapshotValue.showModalOnForce) {
+        if (initialLoad || !snapshotValue.showModal) {
           await runUpdate();
         } else {
           actions.showUpdateModal(snapshotValue, runUpdate);
