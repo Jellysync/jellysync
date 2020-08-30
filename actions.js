@@ -140,6 +140,23 @@ export function clearSessionStorage(snapshot) {
   }
 }
 
-export function clearCookies() {
-  Object.keys(jsCookie.get()).forEach(cookie => jsCookie.remove(cookie));
+export function clearCookies(snapshot) {
+  Object.keys(jsCookie.get()).forEach(cookie => {
+    if (snapshot.clearAllCookies) {
+      jsCookie.remove(cookie);
+      return;
+    }
+
+    if (snapshot.whiteListCookies) {
+      if (snapshot.cookieKeys.includes(cookie)) {
+        jsCookie.remove(cookie);
+        return;
+      }
+    } else {
+      if (!snapshot.cookieKeys.includes(cookie)) {
+        jsCookie.remove(cookie);
+        return;
+      }
+    }
+  });
 }
