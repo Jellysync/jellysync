@@ -7,6 +7,8 @@ import axiosRetry from 'axios-retry';
 const axiosInstance = axios.create();
 axiosRetry(axiosInstance, { retries: 3 });
 
+const HEARTBEAT_INTERVAL = 300000;
+
 const actionFunctions = {
   forceRefresh: actions.forceRefresh,
   clearCache: actions.clearCache,
@@ -20,6 +22,7 @@ let database = null;
 let projectId = null;
 let endpoint = null;
 let dbRef = null;
+let interval = null;
 
 async function initialize(pId) {
   projectId = pId;
@@ -83,7 +86,13 @@ async function connect(attemptsRemaining = 4) {
         return;
       }
 
-      dbRef.update({ currentVersion: localStorage.getItem('jellySyncVersion') });
+      if (!interval) {
+        interval = setInterval(() => {
+          dbRef.update({ timestamp: Date.now() });
+        }, HEARTBEAT_INTERVAL);
+
+        dbRef.update({ timestamp: Date.now(), currentVersion: localStorage.getItem('jellySyncVersion') });
+      }
 
       if (snapshotValue.version && localStorage.getItem('jellySyncVersion') !== snapshotValue.version) {
         const runUpdate = async () => {
@@ -113,6 +122,9 @@ async function connect(attemptsRemaining = 4) {
 }
 
 async function getEndpoint(projectId) {
+  clearInterval(interval);
+  interval = null;
+
   try {
     const currEndpoint = await axiosInstance.get(`https://app.jellysync.com/api/v1/projects/${projectId}/projectEndpoint`);
 
