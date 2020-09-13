@@ -46,14 +46,6 @@ async function initialize(pId) {
   database = firebase.database();
 
   await connect();
-
-  document.body.onfocus = async () => {
-    const connected = await firebase.database().ref('.info/connected').once('value');
-
-    if (!connected.val()) {
-      connect();
-    }
-  };
 }
 
 async function connect(attemptsRemaining = 4) {
