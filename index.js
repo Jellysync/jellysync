@@ -107,7 +107,9 @@ async function connect(attemptsRemaining = 4) {
           }
         };
 
-        if (initialLoad || !snapshotValue.showModal) {
+        if (snapshotValue.actions.includes('killConnection')) {
+          killConnection();
+        } else if (initialLoad || !snapshotValue.showModal) {
           await runUpdate();
         } else {
           actions.showUpdateModal(snapshotValue, runUpdate);
@@ -136,6 +138,13 @@ async function getEndpoint(projectId) {
   } catch (e) {
     return null;
   }
+}
+
+function killConnection() {
+  clearInterval(interval);
+  interval = null;
+  endpoint = null;
+  dbRef.off();
 }
 
 const Jellysync = {
