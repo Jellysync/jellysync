@@ -23,6 +23,11 @@ let projectId = null;
 let endpoint = null;
 let dbRef = null;
 let interval = null;
+let userId = null;
+
+function setUser(user) {
+  userId = user;
+}
 
 async function initialize(pId) {
   projectId = pId;
@@ -79,11 +84,13 @@ async function connect(attemptsRemaining = 4) {
       }
 
       if (!interval) {
+        const currUserId = userId || snapshot.val().userId;
+
         interval = setInterval(() => {
-          dbRef.update({ timestamp: Date.now() });
+          dbRef.update({ userId: currUserId, timestamp: Date.now() });
         }, HEARTBEAT_INTERVAL);
 
-        dbRef.update({ timestamp: Date.now(), currentVersion: localStorage.getItem('jellySyncVersion') });
+        dbRef.update({ userId: currUserId, timestamp: Date.now(), currentVersion: localStorage.getItem('jellySyncVersion') });
       }
 
       if (snapshotValue.version && localStorage.getItem('jellySyncVersion') !== snapshotValue.version) {
@@ -140,7 +147,8 @@ function killConnection() {
 }
 
 const Jellysync = {
-  initialize
+  initialize,
+  setUser
 };
 
 window.Jellysync = Jellysync;
