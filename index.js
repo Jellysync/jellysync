@@ -84,7 +84,7 @@ async function connect(attemptsRemaining = 4) {
       }
 
       if (!interval) {
-        const currUserId = userId || snapshot.val().userId;
+        const currUserId = userId || snapshot.val().userId || null;
 
         interval = setInterval(() => {
           dbRef.update({ userId: currUserId, timestamp: Date.now() });
