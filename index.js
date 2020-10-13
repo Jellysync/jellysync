@@ -68,6 +68,10 @@ async function connect(attemptsRemaining = 4) {
       }
     }
 
+    if (dbRef) {
+      dbRef.off();
+    }
+
     dbRef = database.ref(`projects/${projectId}/${endpoint.id}`);
 
     dbRef.onDisconnect(() => connect());
