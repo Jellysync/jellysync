@@ -110,7 +110,7 @@ async function connect(attemptsRemaining = 4) {
           }
         };
 
-        if (snapshotValue.actions.includes('killConnection')) {
+        if ((snapshotValue.actions || []).includes('killConnection')) {
           killConnection();
         } else if (initialLoad || !snapshotValue.showModal) {
           await runUpdate();

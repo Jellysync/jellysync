@@ -86,14 +86,45 @@ export async function showUpdateModal(snapshot, callback) {
   };
 }
 
-export function forceRefresh() {
-  location.reload();
+export function forceRefresh(snapshot) {
+  location.reload((snapshot.actions || []).includes('clearCache'));
 }
 
 export async function clearCache() {
   const keyList = await caches.keys();
 
   await Promise.all(keyList.map(key => caches.delete(key)));
+
+  const scripts = Object.values(document.scripts).map(s => s.src);
+  const links = Object.values(document.getElementsByTagName('link')).map(l => l.href);
+  const sources = scripts.concat(links);
+
+  const fetches = [];
+
+  for (let i = 0; i < sources.length; i++) {
+    let currUrl = sources[i];
+
+    if (currUrl.includes(window.location.origin)) {
+      currUrl = currUrl.replace(window.location.origin, '');
+    }
+
+    const ifr = document.createElement('iframe');
+    ifr.name = ifr.id = 'ifr_' + Date.now();
+    document.body.appendChild(ifr);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.target = ifr.name;
+    form.action = currUrl;
+
+    document.body.appendChild(form);
+
+    try {
+      await fetch(currUrl, { cache: 'reload', credentials: 'include' });
+    } catch (e) {}
+
+    form.submit();
+  }
 }
 
 export function clearLocalStorage(snapshot) {
