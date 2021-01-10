@@ -27,6 +27,10 @@ let userId = null;
 
 function setUser(user) {
   userId = user;
+
+  if (dbRef) {
+    dbRef.update({ userId, timestamp: Date.now() });
+  }
 }
 
 async function initialize(pId) {
