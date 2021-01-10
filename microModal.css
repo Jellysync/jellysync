@@ -167,3 +167,10 @@
 .jellysync_modal .jellysync_modal__overlay {
   will-change: transform;
 }
+
+.jellysync_ifr {
+  height: 0;
+  width: 0;
+  position: absolute;
+  left: -100px;
+}

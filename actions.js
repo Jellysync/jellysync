@@ -14,7 +14,7 @@ export async function showUpdateModal(snapshot, callback) {
   const closeTag = updateIsOptional ? 'data-micromodal-close' : '';
   const countdown = updateIsOptional ? '' : `<p class="jellysync_modal__countdown">Auto refreshing in ${refreshTime} seconds.</p>`;
   const cancelButton = updateIsOptional
-    ? '<button class="jellysync_modal__btn jellysync_modal__btn jellysync_cancel_button" data-micromodal-close>Cancel</button>'
+    ? '<button id="jellysync_cancel_button" class="jellysync_modal__btn jellysync_modal__btn jellysync_cancel_button" data-micromodal-close>Cancel</button>'
     : '';
 
   const jellySyncModal = `
@@ -32,7 +32,7 @@ export async function showUpdateModal(snapshot, callback) {
           </main>
           <footer class="jellysync_modal__footer">
             ${cancelButton}
-            <button class="jellysync_modal__btn jellysync_modal__btn-primary jellysync_update_button">Update</button>
+            <button id="jellysync_update_button" class="jellysync_modal__btn jellysync_modal__btn-primary jellysync_update_button">Update</button>
           </footer>
         </div>
       </div>
@@ -52,48 +52,93 @@ export async function showUpdateModal(snapshot, callback) {
 
   let secondsToGo = refreshTime;
   let timer = null;
-  let performUpdate = false;
 
   MicroModal.show('jellysync-modal', {
-    onClose: () => {
-      clearInterval(timer);
-
+    onClose: async () => {
       const modal = document.querySelector('#jellysync-modal');
       modal.parentNode.removeChild(modal);
-
-      if (performUpdate) {
-        callback();
-      }
     }
   });
 
+  const performUpdate = async () => {
+    clearInterval(timer);
+
+    if (countdown) {
+      document.getElementsByClassName('jellysync_modal__countdown')[0].innerHTML = ``;
+    }
+
+    const updateButton = document.querySelector('#jellysync_update_button');
+    updateButton.textContent = 'Updating...';
+    updateButton.disabled = true;
+
+    const cancelButtonSelector = document.querySelector('#jellysync_cancel_button');
+
+    if (cancelButtonSelector) {
+      cancelButtonSelector.parentElement.removeChild(cancelButtonSelector);
+    }
+
+    await callback();
+
+    MicroModal.close('jellysync-modal');
+  };
+
   if (!updateIsOptional) {
-    timer = setInterval(() => {
+    timer = setInterval(async () => {
       secondsToGo -= 1;
 
       document.getElementsByClassName('jellysync_modal__countdown')[0].innerHTML = `Auto refreshing in ${secondsToGo} seconds.`;
 
       if (secondsToGo <= 0) {
-        performUpdate = true;
-        MicroModal.close('jellysync-modal');
+        await performUpdate();
       }
     }, 1000);
   }
 
-  document.getElementsByClassName('jellysync_update_button')[0].onclick = () => {
-    performUpdate = true;
-    MicroModal.close('jellysync-modal');
+  document.getElementsByClassName('jellysync_update_button')[0].onclick = async () => {
+    await performUpdate();
   };
 }
 
-export function forceRefresh() {
-  location.reload();
+export function forceRefresh(snapshot) {
+  location.reload((snapshot.actions || []).includes('clearCache'));
 }
 
 export async function clearCache() {
   const keyList = await caches.keys();
 
   await Promise.all(keyList.map(key => caches.delete(key)));
+
+  const scripts = Object.values(document.scripts).map(s => s.src);
+  const links = Object.values(document.getElementsByTagName('link')).map(l => l.href);
+  const sources = scripts.concat(links);
+
+  for (let i = 0; i < sources.length; i++) {
+    let currUrl = sources[i];
+
+    if (currUrl.includes(window.location.origin)) {
+      currUrl = currUrl.replace(window.location.origin, '');
+    } else {
+      continue;
+    }
+
+    const ifr = document.createElement('iframe');
+    ifr.name = ifr.id = `ifr_${i}_${Date.now()}`;
+    ifr.classList.add(`jellysync_ifr`);
+    document.body.appendChild(ifr);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.target = ifr.name;
+    form.action = currUrl;
+
+    document.body.appendChild(form);
+
+    form.submit();
+
+    try {
+      await fetch(currUrl, { cache: 'reload', credentials: 'include' });
+    } catch (e) {}
+  }
 }
 
 export function clearLocalStorage(snapshot) {

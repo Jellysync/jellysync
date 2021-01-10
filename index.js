@@ -27,6 +27,10 @@ let userId = null;
 
 function setUser(user) {
   userId = user;
+
+  if (dbRef) {
+    dbRef.update({ userId, timestamp: Date.now() });
+  }
 }
 
 async function initialize(pId) {
@@ -110,7 +114,7 @@ async function connect(attemptsRemaining = 4) {
           }
         };
 
-        if (snapshotValue.actions.includes('killConnection')) {
+        if ((snapshotValue.actions || []).includes('killConnection')) {
           killConnection();
         } else if (initialLoad || !snapshotValue.showModal) {
           await runUpdate();
