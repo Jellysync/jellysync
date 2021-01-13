@@ -112,33 +112,32 @@ export async function clearCache() {
   const links = Object.values(document.getElementsByTagName('link')).map(l => l.href);
   const sources = scripts.concat(links);
 
-  for (let i = 0; i < sources.length; i++) {
-    let currUrl = sources[i];
-
-    if (currUrl.includes(window.location.origin)) {
-      currUrl = currUrl.replace(window.location.origin, '');
-    } else {
-      continue;
-    }
-
-    const ifr = document.createElement('iframe');
-    ifr.name = ifr.id = `ifr_${i}_${Date.now()}`;
-    ifr.classList.add(`jellysync_ifr`);
-    document.body.appendChild(ifr);
-
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.target = ifr.name;
-    form.action = currUrl;
-
-    document.body.appendChild(form);
-
-    form.submit();
-
+  const promises = sources.map(async (source, i) => {
     try {
+      let currUrl = source;
+
+      if (currUrl.includes(window.location.origin)) {
+        currUrl = currUrl.replace(window.location.origin, '');
+      } else {
+        return;
+      }
+
+      const ifr = document.createElement('iframe');
+      ifr.name = ifr.id = `ifr_${i}_${Date.now()}`;
+      ifr.classList.add(`jellysync_ifr`);
+      document.body.appendChild(ifr);
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.target = ifr.name;
+      form.action = currUrl;
+      document.body.appendChild(form);
+      form.submit();
+
       await fetch(currUrl, { cache: 'reload', credentials: 'include' });
     } catch (e) {}
-  }
+  });
+
+  await Promise.all(promises);
 }
 
 export function clearLocalStorage(snapshot) {
